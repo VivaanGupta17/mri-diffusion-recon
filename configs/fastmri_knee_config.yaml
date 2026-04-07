@@ -1,0 +1,142 @@
+# FastMRI Knee Single-Coil Configuration
+# MRI-DiffRecon: Score-Based Diffusion Models for MRI Reconstruction
+#
+# Target anatomy: Knee
+# Challenge: singlecoil
+# Dataset: fastMRI (NYU / FAIR)
+# Reference: https://fastmri.org/dataset/
+
+experiment:
+  name: "knee_singlecoil_vpsde_4x"
+  description: "VP-SDE score-based diffusion for fastMRI knee 4x acceleration"
+  tags: ["diffusion", "knee", "singlecoil", "4x"]
+
+# ------------------------------------------------------------------
+# Data Configuration
+# ------------------------------------------------------------------
+data:
+  dataset: "fastmri_knee"
+  data_root: "/data/fastmri"               # Set to your fastMRI data path
+  challenge: "singlecoil"
+  anatomy: "knee"
+  image_size: 320                          # Standard fastMRI knee resolution
+
+  # Undersampling
+  acceleration: 4                          # Primary benchmark: 4x
+  center_fractions: 0.08                   # 8% of lines always sampled (ACS)
+  mask_type: "random"                      # random | equispaced | poisson
+  mask_seed: null                          # null = random per slice
+
+  # Training data
+  train_split: "train"
+  val_split: "val"
+  sample_rate: 1.0                         # Use 100% of training data
+  max_volume_slices: null                  # null = all slices per volume
+
+  # Data loading
+  batch_size: 4                            # Per GPU
+  num_workers: 8
+  pin_memory: true
+  prefetch_factor: 2
+
+# ------------------------------------------------------------------
+# Model Configuration
+# ------------------------------------------------------------------
+model:
+  model_type: "ncsn_pp"                    # ncsn_pp | complex_ncsn_pp
+  in_channels: 2                           # Real + imaginary
+  cond_channels: 2                         # Conditioning input channels
+  base_channels: 128                       # Base feature channels
+  channel_mults: [1, 2, 4, 8]             # Channel multipliers per level
+  num_res_blocks: 2                        # Residual blocks per level
+  emb_dim: 512                             # Noise level embedding dimension
+  dropout: 0.1
+  fourier_scale: 16.0
+  scale_by_sigma: true                     # NCSN++ normalization
+
+# ------------------------------------------------------------------
+# Diffusion Process
+# ------------------------------------------------------------------
+diffusion:
+  sde_type: "vp"                           # vp (VP-SDE) | ve (VE-SDE)
+
+  # VP-SDE parameters
+  beta_min: 0.1
+  beta_max: 20.0
+
+  # VE-SDE parameters (used if sde_type: ve)
+  sigma_min: 0.01
+  sigma_max: 50.0
+
+  # Data consistency
+  dc_mode: "gradient"                      # gradient | proximal
+  dc_lambda: 1.0                           # Data consistency weight
+  dc_freq: 1                              # Apply DC every N steps
+
+# ------------------------------------------------------------------
+# Training
+# ------------------------------------------------------------------
+training:
+  num_training_steps: 500000
+  learning_rate: 2.0e-4
+  weight_decay: 1.0e-4
+  warmup_steps: 10000
+
+  # Optimizer
+  optimizer: "adamw"
+  betas: [0.9, 0.999]
+  eps: 1.0e-8
+  grad_clip: 1.0                           # Max gradient norm
+
+  # Loss
+  loss_weighting: "likelihood"             # likelihood | uniform | snr | truncated
+
+  # EMA
+  ema_decay: 0.9999
+
+  # Mixed precision
+  use_amp: true
+
+  # Logging
+  log_every: 100
+  val_every: 5000
+  save_every: 10000
+  max_checkpoints: 5
+
+  # Multi-GPU
+  distributed: false                       # Set true for multi-GPU
+  num_gpus: 4
+
+# ------------------------------------------------------------------
+# Inference
+# ------------------------------------------------------------------
+inference:
+  method: "pc"                             # pc | em | ddim
+  num_steps: 1000                          # Diffusion steps at inference
+  num_corrector_steps: 1                   # Corrector steps (PC only)
+  ddim_steps: 50                           # Steps for fast DDIM inference
+  use_ema: true                            # Use EMA weights for inference
+  use_amp: true
+
+# ------------------------------------------------------------------
+# Evaluation
+# ------------------------------------------------------------------
+evaluation:
+  metrics:
+    - ssim
+    - psnr
+    - nmse
+    - lpips
+    - fid
+  acceleration_factors: [4, 8, 16]        # Test all accelerations
+  compute_clinical_quality: true
+  num_visualization_samples: 8
+
+# ------------------------------------------------------------------
+# Output
+# ------------------------------------------------------------------
+output:
+  output_dir: "runs/knee_singlecoil_4x"
+  log_dir: "runs/knee_singlecoil_4x/logs"
+  checkpoint_dir: "runs/knee_singlecoil_4x/checkpoints"
+  results_dir: "runs/knee_singlecoil_4x/results"

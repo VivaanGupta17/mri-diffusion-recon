@@ -1,0 +1,142 @@
+# FastMRI Brain Multi-Coil Configuration
+# MRI-DiffRecon: Score-Based Diffusion Models for MRI Reconstruction
+#
+# Target anatomy: Brain
+# Challenge: multicoil
+# Dataset: fastMRI (NYU / FAIR)
+# Contrasts: T1, T2, FLAIR (combined training)
+
+experiment:
+  name: "brain_multicoil_vpsde_4x"
+  description: "VP-SDE diffusion for fastMRI brain multi-coil 4x acceleration"
+  tags: ["diffusion", "brain", "multicoil", "4x"]
+
+# ------------------------------------------------------------------
+# Data Configuration
+# ------------------------------------------------------------------
+data:
+  dataset: "fastmri_brain"
+  data_root: "/data/fastmri"
+  challenge: "multicoil"
+  anatomy: "brain"
+  image_size: 320
+
+  # Undersampling
+  acceleration: 4
+  center_fractions: 0.04                   # Brain multi-coil uses smaller ACS
+  mask_type: "equispaced"                  # Equispaced better for multi-coil
+
+  # Multi-coil settings
+  num_coils: 16                            # Typical brain array size
+  coil_combine: "rss"                      # rss | sense | espirit
+
+  # Training data
+  train_split: "train"
+  val_split: "val"
+  sample_rate: 1.0
+  max_volume_slices: null
+  contrasts:                               # Filter by contrast type
+    - T1POST
+    - T2
+    - FLAIR
+    - T1PRE
+
+  # Data loading
+  batch_size: 2                            # Smaller batch for multi-coil
+  num_workers: 8
+  pin_memory: true
+
+# ------------------------------------------------------------------
+# Model Configuration
+# ------------------------------------------------------------------
+model:
+  model_type: "complex_ncsn_pp"            # Complex-valued for multi-coil
+  num_coils: 1                             # After RSS combination
+  in_channels: 2
+  cond_channels: 2
+  base_channels: 128
+  channel_mults: [1, 2, 4, 8]
+  num_res_blocks: 2
+  emb_dim: 512
+  dropout: 0.1
+  fourier_scale: 16.0
+  scale_by_sigma: true
+
+# ------------------------------------------------------------------
+# Diffusion Process
+# ------------------------------------------------------------------
+diffusion:
+  sde_type: "vp"
+  beta_min: 0.1
+  beta_max: 20.0
+  sigma_min: 0.01
+  sigma_max: 50.0
+
+  # Data consistency (more aggressive for brain)
+  dc_mode: "gradient"
+  dc_lambda: 0.5                           # Lower lambda for brain (less regularization)
+  dc_freq: 2                               # Apply DC every 2 steps
+
+# ------------------------------------------------------------------
+# Training
+# ------------------------------------------------------------------
+training:
+  num_training_steps: 800000               # Longer for larger brain dataset
+  learning_rate: 1.0e-4                    # Lower LR for multi-coil
+  weight_decay: 1.0e-4
+  warmup_steps: 20000
+
+  optimizer: "adamw"
+  betas: [0.9, 0.999]
+  grad_clip: 1.0
+
+  loss_weighting: "likelihood"
+  ema_decay: 0.9999
+  use_amp: true
+
+  log_every: 100
+  val_every: 10000
+  save_every: 20000
+  max_checkpoints: 5
+
+  distributed: true
+  num_gpus: 8
+
+# ------------------------------------------------------------------
+# Inference
+# ------------------------------------------------------------------
+inference:
+  method: "pc"
+  num_steps: 1000
+  num_corrector_steps: 2                   # More correction for complex brain anatomy
+  ddim_steps: 50
+  use_ema: true
+  use_amp: true
+
+  # Multi-coil specific
+  multi_coil_recon: true
+  coil_combine_mode: "rss"
+
+# ------------------------------------------------------------------
+# Evaluation
+# ------------------------------------------------------------------
+evaluation:
+  metrics:
+    - ssim
+    - psnr
+    - nmse
+    - lpips
+    - fid
+  acceleration_factors: [4, 8]
+  compute_clinical_quality: true
+  num_visualization_samples: 8
+  per_contrast_results: true               # Report results per MRI contrast
+
+# ------------------------------------------------------------------
+# Output
+# ------------------------------------------------------------------
+output:
+  output_dir: "runs/brain_multicoil_4x"
+  log_dir: "runs/brain_multicoil_4x/logs"
+  checkpoint_dir: "runs/brain_multicoil_4x/checkpoints"
+  results_dir: "runs/brain_multicoil_4x/results"

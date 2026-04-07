@@ -1,0 +1,106 @@
+# MRI-DiffRecon .gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Data (large files — store separately)
+data/
+*.h5
+*.hdf5
+*.dcm
+*.nii
+*.nii.gz
+*.mha
+*.mhd
+*.nrrd
+
+# Model checkpoints and runs
+runs/
+checkpoints/
+wandb/
+*.pt
+*.pth
+*.ckpt
+!tests/fixtures/*.pt       # Keep test fixtures
+
+# Results and outputs
+results/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+!docs/figures/             # Keep documentation figures
+!notebooks/figures/
+
+# Logs
+*.log
+logs/
+*.tfevents.*
+tensorboard/
+
+# Notebooks outputs
+notebooks/.ipynb_checkpoints
+notebooks/**/*.ipynb_checkpoints
+**/.ipynb_checkpoints
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Testing
+.tox/
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+
+# Cache files
+_cache_*.pt
+*.cache
+
+# Secrets and credentials
+.env.local
+secrets.yaml
+credentials.json
+
+# Temporary files
+*.tmp
+*.temp
+/tmp/

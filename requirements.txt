@@ -1,0 +1,58 @@
+# MRI-DiffRecon Requirements
+# Install with: pip install -r requirements.txt
+
+# Core deep learning
+torch>=2.0.0
+torchvision>=0.15.0
+torchaudio>=2.0.0
+
+# Scientific computing
+numpy>=1.24.0
+scipy>=1.10.0
+scikit-image>=0.20.0
+scikit-learn>=1.2.0
+
+# MRI data
+h5py>=3.8.0
+pydicom>=2.3.1               # DICOM support
+nibabel>=5.0.0               # NIfTI support (for 3D volumes)
+ismrmrd>=1.13.0              # ISMRMRD format (raw MRI data)
+
+# Configuration
+pyyaml>=6.0
+omegaconf>=2.3.0             # Hierarchical config management
+
+# Visualization & logging
+matplotlib>=3.7.0
+tensorboard>=2.13.0
+wandb>=0.15.0                # Optional: Weights & Biases logging
+tqdm>=4.65.0
+Pillow>=9.5.0
+
+# Evaluation metrics
+lpips>=0.1.4                 # Learned perceptual similarity
+torchmetrics>=0.11.0         # Comprehensive metrics library
+
+# Image processing
+opencv-python>=4.7.0
+albumentations>=1.3.0        # Augmentation
+
+# Distributed training
+accelerate>=0.20.0           # HuggingFace accelerate
+deepspeed>=0.9.0             # Optional: DeepSpeed ZeRO
+
+# Testing
+pytest>=7.3.0
+pytest-cov>=4.1.0
+
+# Development tools
+black>=23.3.0                # Code formatting
+isort>=5.12.0
+flake8>=6.0.0
+mypy>=1.3.0
+
+# Optional: BART toolbox Python bindings for ESPIRiT
+# bart>=0.7.0                 # Requires system BART installation
+
+# Optional: fastMRI official repo utilities
+# fastmri>=0.2.1              # pip install fastmri
