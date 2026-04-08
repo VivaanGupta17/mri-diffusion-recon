@@ -797,3 +797,5 @@ if __name__ == "__main__":
     print("\n" + tradeoff.generate_report())
 
     print("Clinical quality tests passed.")
+
+# 98% pathology preservation at 4x is the clinical acceptance bar
