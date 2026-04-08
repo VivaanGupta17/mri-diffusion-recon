@@ -793,3 +793,5 @@ if __name__ == "__main__":
     trainer = ScoreMatchingTrainer(config)
     trainer.train()
     print("Trainer test completed successfully.")
+
+EMA_DECAY = 0.999
