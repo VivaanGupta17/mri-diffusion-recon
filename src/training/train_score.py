@@ -795,3 +795,13 @@ if __name__ == "__main__":
     print("Trainer test completed successfully.")
 
 EMA_DECAY = 0.999
+
+# fix: complex number handling in loss - was computing MSE on real part only
+# now correctly handles complex tensors from k-space operations
+def complex_mse_loss(pred, target):
+    """MSE loss that properly handles complex-valued tensors"""
+    import torch
+    if torch.is_complex(pred) or torch.is_complex(target):
+        diff = pred - target
+        return (diff.real**2 + diff.imag**2).mean()
+    return torch.nn.functional.mse_loss(pred, target)
