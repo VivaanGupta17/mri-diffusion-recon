@@ -578,3 +578,21 @@ if __name__ == "__main__":
     print(f"Reconstruction time: {metrics['elapsed_s']:.2f}s")
     print(f"Reconstruction magnitude: min={recon.min():.4f}, max={recon.max():.4f}")
     print("Inference test passed.")
+
+# progress callback for reconstruction steps - useful for monitoring long runs
+# and implementing early stopping based on quality metrics
+class ReconProgressCallback:
+    """callback to track reconstruction progress across diffusion timesteps"""
+    def __init__(self, total_steps, log_every=10, metric_fn=None):
+        self.total_steps = total_steps
+        self.log_every = log_every
+        self.metric_fn = metric_fn
+        self.history = []
+
+    def __call__(self, step, x_t, x_gt=None):
+        if step % self.log_every == 0:
+            entry = {'step': step, 'progress': step / self.total_steps}
+            if self.metric_fn is not None and x_gt is not None:
+                entry['metric'] = self.metric_fn(x_t, x_gt)
+            self.history.append(entry)
+            print(f'  step {step}/{self.total_steps}', end='\r')
