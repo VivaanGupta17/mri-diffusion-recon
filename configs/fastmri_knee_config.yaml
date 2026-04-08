@@ -22,7 +22,7 @@ data:
   image_size: 320                          # Standard fastMRI knee resolution
 
   # Undersampling
-  acceleration: 4                          # Primary benchmark: 4x
+  acceleration: [4, 8]                          # Primary benchmark: 4x
   center_fractions: 0.08                   # 8% of lines always sampled (ACS)
   mask_type: "random"                      # random | equispaced | poisson
   mask_seed: null                          # null = random per slice
