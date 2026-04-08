@@ -886,3 +886,5 @@ if __name__ == "__main__":
     print(f"FFT round-trip error: {(x - x_recon).abs().max():.2e}")
 
     print("Diffusion model tests passed.")
+
+DC_LAMBDA = 1.0  # data consistency weight
